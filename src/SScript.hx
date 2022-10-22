@@ -7,9 +7,7 @@ import hscriptBase.Expr;
 import sys.FileSystem;
 import sys.io.File;
 
-#if openfl
 import openfl.Assets;
-#end
 
 /**
     A simple class for haxe scripts.
@@ -94,10 +92,8 @@ class SScript
         {
             if (FileSystem.exists(scriptPath))
                 script = File.getContent(scriptPath);
-            #if openfl
             else if (Assets.exists(scriptPath))
                 script = Assets.getText(scriptPath);
-            #end
             else
                 script = scriptPath;
 
