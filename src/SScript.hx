@@ -7,6 +7,10 @@ import hscriptBase.Expr;
 import sys.FileSystem;
 import sys.io.File;
 
+#if openfl
+import openfl.Assets;
+#end
+
 /**
     A simple class for haxe scripts.
 
@@ -86,16 +90,14 @@ class SScript
     **/
     public function new(?scriptPath:String = "", ?preset:Bool = true, ?startExecute:Bool = true)
     {
-        #if !hscriptPos
-        trace("Define \"hscriptPos\" is recommended." 
-        #if openfl + " Add <haxedef name=\"hscriptPos\"/> to Project.xml to define." 
-        #else + " Add \"-D hscriptPos\" to compiler arguments to define." 
-        #end);
-        #end
         if (scriptPath != ""  && scriptPath != null)
         {
             if (FileSystem.exists(scriptPath))
                 script = File.getContent(scriptPath);
+            #if openfl
+            else if (Assets.exists(scriptPath))
+                script = Assets.getText(scriptPath);
+            #end
             else
                 script = scriptPath;
 
