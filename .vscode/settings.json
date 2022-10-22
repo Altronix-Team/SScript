@@ -1,0 +1,16 @@
+{
+	"haxecheckstyle.sourceFolders": [
+		"src"
+	],
+	"[haxe]": {
+		"editor.formatOnSave": true
+	},
+	"haxe.configurations": [
+		{
+			"label": "JS",
+			"args": [
+				"openfl"
+			]
+		}
+	]
+}
