@@ -465,7 +465,9 @@ class Interp {
 
 			var inl=false;
 			try{
-				inl=locals.get(id).isInline;
+				//null object reference safety
+				if (Reflect.field(locals.get(id), 'isInline') != null)
+					inl=Reflect.field(locals.get(id), 'isInline');
 			}
 			catch(e){
 				inl = false;
