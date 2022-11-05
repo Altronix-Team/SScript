@@ -931,13 +931,9 @@ class Interp {
 
 				if(prop==null)
 				{
-					var field=switch(en){
-						case EIdent(v,f):v;
-						default:null;
-					}
-					error(EUnexistingField( field ,f ));
+					prop = Reflect.field(o,f);
 				}
-				else prop;
+				prop;
 			}
 			catch(e){
 				throw e;

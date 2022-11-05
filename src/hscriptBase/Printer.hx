@@ -348,7 +348,6 @@ class Printer {
 			case EUnknownIdentifier(v): "Unknown identifier: "  + v + ".";
 			case EUpperCase: "Package name cannot have capital letters.";
 			case EDuplicate(v): "Duplicate class field declaration (" + v + ").";
-			case ELowerCaseType(t): "Type " + t + " cannot start with a lowercase letter.";
 			case EExpectedField(v): "Expected \"public\" or \"private\" for " + v + ", couldn't get any.";
 		};
 		#if hscriptPos
