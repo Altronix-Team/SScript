@@ -79,6 +79,11 @@ class SScript
     public var privateAccess:Bool = true;
 
     /**
+        Package path of this script. Gets set automatically when you use `package`.
+    **/
+    public var packagePath(default, null):String = "";
+
+    /**
         Creates a new haxe script that will be ready to use after executing.
 
         @param scriptPath The script path or the script itself.
@@ -405,4 +410,9 @@ class SScript
     {
 		return interp.variables;
 	}
+
+    function setPackagePath(p):String
+    {
+        return packagePath = p;
+    }
 }

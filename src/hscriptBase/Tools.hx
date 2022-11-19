@@ -103,6 +103,11 @@ class Tools {
 		}
 	}
 
+	public static function type( v ) {
+		trace(getType(v));
+		return try { getType; } catch (e) { null; };
+	}
+
 	public static function getType( v ) {
 		return switch(Type.typeof(v)) {
 			case TNull: "null";
@@ -129,9 +134,9 @@ class Tools {
 		#end
 	}
 
-	public static inline function mk( e : ExprDef, p : Expr ) {
+	public static inline function mk( e : ExprDef, p : Expr ) : Expr {
 		#if hscriptPos
-		return { e : e, pmin : p.pmin, pmax : p.pmax, origin : p.origin, line : p.line };
+		return cast { e : e, pmin : p.pmin, pmax : p.pmax, origin : p.origin, line : p.line };
 		#else
 		return e;
 		#end

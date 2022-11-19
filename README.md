@@ -7,9 +7,11 @@ Things done so far:
 - [x] Public and Private
 - [x] Final declaration
 - [x] Inline variables and functions
-- [x] True type declaration
 - [x] Private access
 - [x] Advanced call
+- [x] Null Coalescing
+- [x] Package
+- [ ] True type declaration (In progress)
 - [ ] Enum
 - [ ] Abstract
 - [ ] Class

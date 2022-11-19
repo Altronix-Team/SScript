@@ -20,7 +20,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 package hscriptBase;
-import haxe.display.JsonModuleTypes.JsonBinop;
 import haxe.PosInfos;
 import hscriptBase.Expr;
 import haxe.Constraints;
@@ -64,6 +63,8 @@ class Interp {
 	{
 		return parser = p;
 	}
+
+	var resumeError:Bool;
 
 	public function new() {
 		#if haxe3
@@ -128,7 +129,6 @@ class Interp {
 		binops.set("<<",function(e1,e2) return me.expr(e1) << me.expr(e2));
 		binops.set(">>",function(e1,e2) return me.expr(e1) >> me.expr(e2));
 		binops.set(">>>",function(e1,e2) return me.expr(e1) >>> me.expr(e2));
-		binops.set("===",function(e1,e2) return true);
 		binops.set("==",function(e1,e2) return me.expr(e1) == me.expr(e2));
 		binops.set("!=",function(e1,e2) return me.expr(e1) != me.expr(e2));
 		binops.set(">=",function(e1,e2) return me.expr(e1) >= me.expr(e2));
@@ -151,6 +151,22 @@ class Interp {
 		assignOp(">>=",function(v1,v2) return v1 >> v2);
 		assignOp(">>>=",function(v1,v2) return v1 >>> v2);
 	}
+
+	function coalesce(e1,e2) : Dynamic
+	{
+		var me = this;
+		var e1=me.expr(e1);
+		var e2=me.expr(e2);
+		return e1 == null ? e2:e1;
+	}
+
+	function coalesce2(e1,e2) : Dynamic{
+		var me = this;
+		var e1=me.expr(e1);
+		var e2=me.expr(e2);
+		return if (e1==null) e1=e2 else e1;
+	}
+
 	function setVar( name : String, v : Dynamic ) {
 		variables.set(name, v);
 	}
@@ -319,6 +335,7 @@ class Interp {
 	}
 
 	inline function error(e : #if hscriptPos ErrorDef #else Error #end, rethrow=false ) : Dynamic {
+		if (resumeError)return null;
 		#if hscriptPos var e = new Error(e, curExpr.pmin, curExpr.pmax, curExpr.origin, curExpr.line); #end
 		if( script.interp!=null&&script.active ) script.error(e);
 		if( rethrow ) this.rethrow(e) else throw e;
@@ -582,7 +599,12 @@ class Interp {
 				variables.set( c , e );
 
 			return null;
-		case EPackage:
+		case EPackage(p):
+			if(p!=p.toLowerCase())
+				error(ECustom('Package path cannot have capital letters.'));
+			@:privateAccess script.setPackagePath(p==null?"":p);
+			if(trk!=null)
+				error(ECustom('Unexpected package'));
 			return null;
 		case EFunction(params,fexpr,name,_,t):
 			var trk1 = switch(#if hscriptPos fexpr.e #else e #end){
@@ -804,6 +826,8 @@ class Interp {
 			for( f in fl )
 				set(o,f.name,expr(f.e));
 			return o;
+		case ECoalesce(e1,e2,assign):
+			return if (assign) coalesce2(e1,e2) else coalesce(e1,e2);
 		case ETernary(econd,e1,e2):
 			return if( expr(econd) == true ) expr(e1) else expr(e2);
 		case ESwitch(e, cases, def):

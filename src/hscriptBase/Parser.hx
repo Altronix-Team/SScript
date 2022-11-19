@@ -1029,6 +1029,8 @@ class Parser {
 			parseStructure('import');
 		case 'import':
 			var path = [getIdent()];
+			var isStar;
+			isStar = false;
 			while( true ) {
 				var t = token();
 				if( t != TDot ) {
@@ -1039,13 +1041,15 @@ class Parser {
 				switch( t ) {
 				case TId(id):
 					path.push(id);
+				case TOp('*'):
+					isStar = true;
+					break;
 				default:
 					unexpected(t);
 				}
 			}
 
-			if (path.contains('*'))
-				throw new Exception('"*" is not supported!');
+			/*if(path.contains('*'))throw new Exception('"*" is not supported!');*/
 
 			var anPath:Array < String > = [];
 			var int : Int = 0;
@@ -1086,7 +1090,7 @@ class Parser {
 
 			if(maybe)asIdent=getIdent();
 
-			if(maybe&&""+asIdent=="null")
+			if(maybe&&""+asIdent=="null"&&isStar)
 				unexpected(TId("as"));
 
 			var cl:String = null;
@@ -1105,7 +1109,13 @@ class Parser {
 				property = Reflect.getProperty(property, cl);
 				if(maybe&&''+asIdent!="null")
 					cl=asIdent;
-
+				var ps = new Array();
+				if(isStar){
+					var prop=Reflect.fields(property);
+					for(eprop in prop)
+						ps.push(Reflect.field(property, eprop));
+				}
+				
 				EImport( property, cl );
 			}
 			else 
@@ -1155,13 +1165,34 @@ class Parser {
 					}
 				}
 			}
-			
 			mk(EImport( eclass , cl));
-		case 'package': //ignore package since it is useless in hscript
-			if(packaged)
-				throw new Exception('Cannot use "package" twice!');
+		case 'package':
+			var path = [getIdent(false)];
+			if (!path.contains(null))
+				while( true ) {
+					var t = token();
+					if( t != TDot ) {
+						push(t);
+						break;
+					}
+					t = token();
+					switch( t ) {
+					case TId(id):
+						path.push(id);
+					default:
+						unexpected(t);
+					}
+				}
+			else readPos--;
 
-			return mk(EPackage);
+			var ppath:String="";
+			if (path.length > 1) for (i in path)
+			{
+				ppath+=i+".";
+			} else ppath = try path[0] catch(e) "";
+			var spath = ppath.split('');
+			spath[spath.length-1] = StringTools.replace(spath[spath.length-1],'.','');
+			return mk(EPackage(spath.join('')));
 		default:
 			null;
 		}
@@ -1171,7 +1202,6 @@ class Parser {
 		var tk = token();
 		switch( tk ) {
 		case TOp(op):
-
 			if( op == "->" ) {
 				// single arg reinterpretation of `f -> e` , `(f) -> e` and `(f:T) -> e`
 				switch( expr(e1) ) {
@@ -1204,10 +1234,32 @@ class Parser {
 			ensure(TBkClose);
 			return parseExprNext(mk(EArray(e1,e2),pmin(e1)));
 		case TQuestion:
-			var e2 = parseExpr();
-			ensure(TDoubleDot);
-			var e3 = parseExpr();
-			return mk(ETernary(e1,e2,e3),pmin(e1),pmax(e3));
+			var oldPos_ = readPos;
+			var tk2 = token();
+			return switch (tk2)
+			{
+				case TQuestion:
+					var oldPos = readPos;
+					var tk1 = token();
+					var assign = false;
+					var e2;
+					if (Type.enumEq(tk1, TOp('=')))
+						assign = true;
+					if(!assign){readPos=oldPos - 1; while(true){tk1 = token(); if(tk1 == TQuestion)break;}} //cheap way to revert tokens
+					e2 = parseExpr();
+					mk(ECoalesce(e1,e2,assign));
+				default:
+					readPos=oldPos_ - 1;
+					while(true)
+					{
+						tk2=token();
+						if(tk2==TQuestion)break;
+					}
+					var e2 = parseExpr();
+					ensure(TDoubleDot);
+					var e3 = parseExpr();
+					return mk(ETernary(e1,e2,e3),pmin(e1),pmax(e3));
+			}
 		default:
 			push(tk);
 			return e1;
@@ -1743,6 +1795,7 @@ class Parser {
 		oldTokenMax = tokenMax;
 		tokenMin = (this.char < 0) ? readPos : readPos - 1;
 		var t = _token();
+		//trace(t);
 		switch (t)
 		{
 			case TId(s): if(s=="cast"||s=="untyped") t=TOp(s);
