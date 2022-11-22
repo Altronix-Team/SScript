@@ -162,9 +162,9 @@ class Interp {
 
 	function coalesce2(e1,e2) : Dynamic{
 		var me = this;
-		var expr1,expr2=e1,e2;
 		var e1=me.expr(e1);
-		return if (e1==null) assign(expr1,expr2) else e1;
+		var e2=me.expr(e2);
+		return if (e1==null) e1=e2 else e1;
 	}
 
 	function setVar( name : String, v : Dynamic ) {
