@@ -103,27 +103,49 @@ class Tools {
 		}
 	}
 
-	public static function type( v ) {
-		trace(getType(v));
-		return try { getType; } catch (e) { null; };
+	public static function ctToType( ct : CType ):String {
+		var ctToType:(ct:CType)->String = function(ct)
+		{
+			return switch (cast(ct, CType)){
+				case CTPath(path, params): switch path[0]{
+					case 'Null': return ctToType(params[0]);
+				} path[0];
+				case CTFun(_,_)|CTParent(_):"Function";
+				case CTAnon(fields): "Anon";
+				default: null;
+			}
+		};
+		return ctToType(ct);
+	}
+
+	public static function compatibleWithEachOther(v,v2):Bool{
+		var chance:Bool = v=="Float"&&v2=="Int";
+		var secondChance:Bool = v=="Dynamic"||v2=="null";
+		return chance||secondChance;
 	}
 
 	public static function getType( v ) {
-		return switch(Type.typeof(v)) {
-			case TNull: "null";
-			case TInt: "Int";
-			case TFloat: "Float";
-			case TBool: "Bool";  
-			case TClass(v): var name = Type.getClassName(v);
-			if(name.contains('.'))
-			{
-				var split = name.split('.');
-				split[split.length - 1];
+		var getType:(s:Dynamic)->String = function(v){
+			return switch(Type.typeof(v)) {
+				case TNull: "null";
+				case TInt: "Int";
+				case TFloat: "Float";
+				case TBool: "Bool";  
+				case TClass(v): var name = Type.getClassName(v);
+				if(name.contains('.'))
+				{
+					var split = name.split('.');
+					name = split[split.length - 1];
+				}
+				switch (name){
+					
+				}
+				name;
+				case TFunction: "Function";
+				default: var string = "" + Type.typeof(v) + ""; string.replace("T","");
 			}
-			else name;
-			case TFunction: "Void";
-			default: var string = "" + Type.typeof(v) + ""; string.replace("T","");
-		}
+		};
+		return getType(v);
 	}
 
 	public static inline function expr( e : Expr ) : ExprDef {

@@ -1335,17 +1335,6 @@ class Parser {
 		return path;
 	}
 
-	public function checkType(v:Map<String, Dynamic>, c:CType) : Bool {
-		var c=switch(c){
-			case CTPath(p):p[0];
-			default:null;
-		};
-		if(c==null)
-			return false;
-		if(!v.exists(c)){error(EUnknownIdentifier(c)); return false;}
-		else return true;
-	}
-
 	function parseType() : CType {
 		var t = token();
 		switch( t ) {
@@ -1795,7 +1784,6 @@ class Parser {
 		oldTokenMax = tokenMax;
 		tokenMin = (this.char < 0) ? readPos : readPos - 1;
 		var t = _token();
-		//trace(t);
 		switch (t)
 		{
 			case TId(s): if(s=="cast"||s=="untyped") t=TOp(s);
