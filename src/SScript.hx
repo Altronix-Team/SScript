@@ -356,15 +356,17 @@ class SScript
         set('Math', Math);
         set('Std', Std);
         set('StringTools', StringTools);
-        set('Sys', Sys);
         set('Date', Date);
         set('DateTools', DateTools);
         set('PI', Math.PI);
         set('POSITIVE_INFINITY', 1 / 0);
         set('NEGATIVE_INFINITY', -1 / 0);
         set('NaN', 0 / 0);
+	    #if sys
+	set('Sys', Sys);
         set('File', File);
         set('FileSystem', FileSystem);
+	   #end
         set('this', this);
         set('SScript', SScript);
     }
