@@ -4,10 +4,14 @@ import haxe.Constraints;
 import hscriptBase.*;
 import hscriptBase.Expr;
 
+#if sys
 import sys.FileSystem;
 import sys.io.File;
+#end
 
+#if openfl
 import openfl.Assets;
+#end
 
 /**
     A simple class for haxe scripts.
@@ -97,11 +101,13 @@ class SScript
     {
         if (scriptPath != ""  && scriptPath != null)
         {
+		#if sys
             if (FileSystem.exists(scriptPath))
                 script = File.getContent(scriptPath);
-            else if (Assets.exists(scriptPath))
+            else #end  #if openfl if (Assets.exists(scriptPath))
                 script = Assets.getText(scriptPath);
-            else
+		#end
+           #if sys else #end
                 script = scriptPath;
 
             scriptFile = scriptPath;
