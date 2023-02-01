@@ -44,7 +44,6 @@ typedef ExprDef = Expr;
 enum Expr {
 #end
 	EConst( c : Const );
-	EMacro( e : Expr );
 	EIdent( v : String , ?isFinal : Bool );
 	EVar( n : String, ?t : CType, ?e : Expr , ?p : TrickyToken , ?g : Array<String> );
 	EFinal( f : String , ?t : CType , ?e : Expr , ?p : TrickyToken );

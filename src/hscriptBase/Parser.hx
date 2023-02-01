@@ -667,23 +667,11 @@ class Parser {
 		}
 	}
 
-	inline function parseStructure(id, ?t : TrickyToken) {
+	function parseStructure(id, ?t : TrickyToken) {
 		#if hscriptPos
 		var p1 = tokenMin;
 		#end
 		return switch( id ) {
-		case "macro":
-			var expr = parseExpr();
-			var e = Tools.expr(expr);
-			switch e{
-				case EVar(_,_,_,_,_)|EFinal(_,_,_,_)|EBinop(_,_)|
-				EUnop(_,_,_)|EIf(_,_,_)|EWhile(_,_)|EDoWhile(_,_)|EFor(_,_,_)|
-				EBreak|EContinue|EReturn(_)|EThrow(_)|ESwitch(_,_,_)|
-				EUsing(_,_)|EImport(_,_)|EPackage(_),ECheckType(_,_):
-				error(ECustom("Unexpected " + Type.getEnum(e)));
-				default:
-			}
-			return mk(EMacro(expr));
 		case "if":
 			ensure(TPOpen);
 			var cond = parseExpr();
