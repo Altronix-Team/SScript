@@ -2,12 +2,12 @@
   "name": "SScript",
   "url": "https://github.com/TheWorldMachinima/SScript",
   "license": "Apache",
-  "tags": ["hscript"],
+  "tags": ["hscript", "sscript", "haxescript"],
   "description": "An easy-to-use Haxe Script class for all targets.",
-  "version": "1.0.0",
+  "version": "1.9.9",
   "classPath": "src/",
-  "releasenote": "Fixes for Linux and Mac.",
-  "contributors": ["TheWorldMachinima"],
+  "releasenote": "Conditional compilation, dynamic functions, overhaul SScript class + bug fixes. (Unfinished)",
+  "contributors": ["TheWorldMachinima", "TahirRollingArch"],
   "dependencies": {
     
   }

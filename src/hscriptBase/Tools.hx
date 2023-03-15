@@ -26,6 +26,21 @@ using StringTools;
 
 class Tools {
 
+	static var init:Dynamic = {
+        #if !sys
+        throw "You cannot access the sys package while targeting js";
+        #else
+        1;
+        #end
+    }
+
+	public static var keys:Array<String> = [
+		"import", "package", "if", "var", "for", "while", "final", "do", "as", "using", "break", "continue",
+		"public", "private", "static", "overload", "override", "class", "function", "else", "try", "catch",
+		"abstract", "case", "switch", "untyped", "cast", "typedef", "dynamic", "default", "enum", "extern",
+		"extends", "implements", "in", "macro", "new", "null", "return", "throw", "from", "to",
+	];
+
 	public static function iter( e : Expr, f : Expr -> Void ) {
 		switch( expr(e) ) {
 		case EConst(_), EIdent(_):

@@ -20,6 +20,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 package hscriptBase;
+import haxe.macro.Compiler;
+import haxe.macro.Context;
 import haxe.Exception;
 import hscriptBase.Expr;
 using StringTools;
@@ -45,6 +47,7 @@ enum Token {
 	TPrepro( s : String );
 }
 
+@:allow(SScript)
 class Parser {
 
 	// config / variables
@@ -156,8 +159,6 @@ class Parser {
 
 	public inline function error( err, ?pmin, ?pmax ) {
 		var e=#if hscriptPos new Error(err, pmin, pmax, origin, line) #else err #end;
-		if( script!=null&&script.active )
-			script.error(e);
 		if( !resumeErrors )
 		#if hscriptPos
 		throw new Error(err, pmin, pmax, origin, line);
@@ -171,7 +172,6 @@ class Parser {
 	}
 
 	function initParser( origin ) {
-		// line=1 - don't reset line : it might be set manualy
 		preprocStack = [];
 		#if hscriptPos
 		this.origin = origin;
@@ -426,11 +426,15 @@ class Parser {
 	}
 
 	function parseExpr() {
+		var oldPos = readPos;
 		var tk = token();
 		#if hscriptPos
 		var p1 = tokenMin;
 		#end
 		switch( tk ) {
+		case TPrepro("end"):
+			push(TConst(CInt(Std.int(Math.NaN)))); //a const token needs to be pushed in case the conditional checks are empty
+			return parseExpr();
 		case TId(id):
 			var e = parseStructure(id);
 			if( e == null )
@@ -667,7 +671,7 @@ class Parser {
 		}
 	}
 
-	function parseStructure(id, ?t : TrickyToken) {
+	function parseStructure(id, ?t : TrickyToken , ?d : DynamicToken) {
 		#if hscriptPos
 		var p1 = tokenMin;
 		#end
@@ -816,6 +820,11 @@ class Parser {
 		case "break": mk(EBreak);
 		case "continue": mk(EContinue);
 		case "else": unexpected(TId(id));
+		case "dynamic":
+			var maybe=maybe(TId("function"));
+			if (!maybe)
+				error(EExpectedField('function'));
+			parseStructure("function", null, {v: true});
 		case "private":
 			var maybeIdent="inline";
 			var maybe=maybe(TId(maybeIdent));
@@ -907,7 +916,7 @@ class Parser {
 			default: push(tk);
 			}
 			var inf = parseFunctionDecl();
-			mk(EFunction(inf.args, inf.body, name, inf.ret, t),p1,pmax(inf.body));
+			mk(EFunction(inf.args, inf.body, name, inf.ret, t, d),p1,pmax(inf.body));
 		case "return":
 			var tk = token();
 			push(tk);
@@ -2032,7 +2041,7 @@ class Parser {
 		var tk = token();
 		return switch( tk ) {
 		case TPOpen:
-			push(TPOpen);
+			push(tk);
 			parseExpr();
 		case TId(id):
 			mk(EIdent(id), tokenMin, tokenMax);
@@ -2046,9 +2055,9 @@ class Parser {
 	function evalPreproCond( e : Expr ) {
 		switch( expr(e) ) {
 		case EIdent(id):
-			return preprocValue(id) != null;
+			return true;
 		case EUnop("!", _, e):
-			return !evalPreproCond(e);
+			return !!!evalPreproCond(e);
 		case EParent(e):
 			return evalPreproCond(e);
 		case EBinop("&&", e1, e2):
@@ -2067,7 +2076,8 @@ class Parser {
 			var e = parsePreproCond();
 			if( evalPreproCond(e) ) {
 				preprocStack.push({ r : true });
-				return token();
+				var t = token();
+				return t;
 			}
 			preprocStack.push({ r : false });
 			skipTokens();
@@ -2088,7 +2098,8 @@ class Parser {
 			}
 		case "end" if( preprocStack.length > 0 ):
 			preprocStack.pop();
-			return token();
+			var t = token();
+			return t;
 		default:
 			return TPrepro(id);
 		}
@@ -2100,7 +2111,7 @@ class Parser {
 		var pos = readPos;
 		while( true ) {
 			var tk = token();
-			if( tk == TEof )
+			if( tk == TEof && preprocStack.length >= 1 )
 				error(EInvalidPreprocessor("Unclosed"), pos, pos);
 			if( preprocStack[spos] != obj ) {
 				push(tk);

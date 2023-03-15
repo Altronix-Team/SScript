@@ -30,11 +30,13 @@ private enum Stop {
 	SReturn;
 }
 
+@:access(SScript)
 class Interp {
 
 	#if haxe3
 	public var variables : Map<String,Dynamic>;
-	var locals : Map<String,{ r : Dynamic , ?isFinal : Bool , ?isInline : Bool , ?t:CType }>;
+	public var dynamicFuncs: Map<String, Bool> = new Map();
+	var locals : Map<String,{ r : Dynamic , ?isFinal : Bool , ?isInline : Bool , ?t:CType , ?dynamicFunc : Bool }>;
 	var binops : Map<String, Expr -> Expr -> Dynamic >;
 	#else
 	public var variables : Hash<Dynamic>;
@@ -44,7 +46,7 @@ class Interp {
 
 	var depth : Int;
 	var inTry : Bool;
-	var declared : Array<{ n : String, old : { r : Dynamic , ?isFinal : Bool , ?isInline : Bool , ?t:CType } }>;
+	var declared : Array<{ n : String, old : { r : Dynamic , ?isFinal : Bool , ?isInline : Bool , ?t:CType, ?dynamicFunc : Bool } }>;
 	var returnValue : Dynamic;
 
 	var parser : Parser;
@@ -177,14 +179,19 @@ class Interp {
 
 	function assign( e1 : Expr, e2 : Expr ) : Dynamic {
 		var v = expr(e2);
-		
 		switch( Tools.expr(e1) ) {
 		case EIdent(id,f):
 			if(locals.get(id)!=null&&locals.get(id).isFinal)
 				return error(EInvalidFinal(id));
 			var l = locals.get(id);
 			if( l == null )
+			{
+				if(!variables.exists(id))
+					error(ECustom('Expected var or final for $id'));
+				if(Type.typeof(variables.get(id))==TFunction&&!dynamicFuncs.exists(id))
+					error(EFunctionAssign(id));
 				setVar(id,v);
+			}
 			else {
 				var t=l.t;
 				if(t!=null)
@@ -193,6 +200,8 @@ class Interp {
 					var stype:String = Tools.getType(v);
 					if(!Tools.compatibleWithEachOther(ftype, stype)&&ftype!=stype&&ftype!='Anon')error(EUnmatcingType(ftype, stype));
 				}
+				if(Type.typeof(l.r)==TFunction&&l.dynamicFunc!=null&&!l.dynamicFunc)
+					error(EFunctionAssign(id));
 				l.r = v;
 			}
 		case EField(e,f):
@@ -309,7 +318,32 @@ class Interp {
 		locals = new Hash();
 		#end
 		declared = new Array();
-		return exprReturn(expr);
+		var r = exprReturn(expr);
+		switch Tools.expr(expr){
+			case EBlock(e):
+				var imports:Int = 0;
+				var pack:Int = 0;
+				for(i in e){
+					switch Tools.expr(i)
+					{
+						case EPackage(_):
+							if(e.indexOf(i)>0)
+								error(ECustom('Unexpected package'));
+							else if(pack > 1)
+								error(ECustom('Multiple packages declared'));
+							pack++;
+						case EImport(_,_,_):
+							if(e.indexOf(i)>imports + pack)
+								error(ECustom('Unexpected import'));
+							imports++;
+						case _:
+					}
+				}
+				if(pack > 1)
+					error(ECustom('Multiple packages ($pack) declared'));
+			case _:
+		}
+		return r;
 	}
 
 	function exprReturn(e,?p) : Dynamic {
@@ -349,7 +383,6 @@ class Interp {
 	inline function error(e : #if hscriptPos ErrorDef #else Error #end, rethrow=false ) : Dynamic {
 		if (resumeError)return null;
 		#if hscriptPos var e = new Error(e, curExpr.pmin, curExpr.pmax, curExpr.origin, curExpr.line); #end
-		if( script.interp!=null&&script.active ) script.error(e);
 		if( rethrow ) this.rethrow(e) else throw e;
 		return null;
 	}
@@ -489,7 +522,7 @@ class Interp {
 			case "cast":
 				return cast (expr(e));
 			case "untyped":
-				return untyped { expr(e); };
+				untyped return { expr(e); };
 			default:
 				error(EInvalidOp(op));
 			}
@@ -623,10 +656,8 @@ class Interp {
 			if(p!=p.toLowerCase())
 				error(ECustom('Package path cannot have capital letters.'));
 			@:privateAccess script.setPackagePath(p==null?"":p);
-			if(trk!=null)
-				error(ECustom('Unexpected package'));
 			return null;
-		case EFunction(params,fexpr,name,_,t):
+		case EFunction(params,fexpr,name,_,t,d):
 			var trk1 = switch(#if hscriptPos fexpr.e #else e #end){
 				case EVar(n,t,e,p):p;
 				case EFinal(n,t,e,p):p;
@@ -728,6 +759,12 @@ class Interp {
 					locals.set(name, ref);
 					capturedLocals.set(name, ref); // allow self-recursion
 				}
+			}
+			if(d!=null&&d.v)
+			{
+				dynamicFuncs.set(name,true);
+				if(locals.exists(name))
+					locals[name].dynamicFunc=true;
 			}
 			return f;
 		case EArrayDecl(arr):

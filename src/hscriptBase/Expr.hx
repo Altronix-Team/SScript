@@ -59,7 +59,7 @@ enum Expr {
 	ECoalesce(e1 : Expr , e2 : Expr , assign : Bool);
 	EBreak;
 	EContinue;
-	EFunction( args : Array<Argument>, e : Expr, ?name : String, ?ret : CType , ?p : TrickyToken );
+	EFunction( args : Array<Argument>, e : Expr, ?name : String, ?ret : CType , ?p : TrickyToken , ?d : DynamicToken );
 	EReturn( ?e : Expr );
 	EArray( e : Expr, index : Expr );
 	EArrayDecl( e : Array<Expr> );
@@ -78,6 +78,8 @@ enum Expr {
 }
 
 typedef TrickyToken = { f : String , v : Bool , n : String };
+
+typedef DynamicToken = { v : Bool };
 
 typedef Argument = { name : String, ?t : CType, ?opt : Bool, ?value : Expr };
 
@@ -117,6 +119,7 @@ enum Error {
 	EDuplicate( v : String );
 	EInvalidChar( c : Int );
 	EUnexpected( s : String );
+	EFunctionAssign( f : String );
 	EUnterminatedString;
 	EUnterminatedComment;
 	EInvalidPreprocessor( msg : String );

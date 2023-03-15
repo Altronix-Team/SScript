@@ -349,6 +349,7 @@ class Printer {
 			case EUpperCase: "Package name cannot have capital letters.";
 			case EDuplicate(v): "Duplicate class field declaration (" + v + ").";
 			case EExpectedField(v): "Expected \"public\" or \"private\" for " + v + ", couldn't get any.";
+			case EFunctionAssign(f): "Cannot rebind this method (" + f + ") : please use 'dynamic' before method declaration";
 		};
 		#if hscriptPos
 		return e.origin + ":" + e.line + ": " + message;
