@@ -10,6 +10,10 @@ import hscriptBase.Expr;
 import sys.FileSystem;
 import sys.io.File;
 
+#if openfl
+import openfl.Assets;
+#end
+
 typedef SScriptCall =
 {
 	public var ?fileName(default, null):String;
@@ -141,6 +145,9 @@ class SScript
 				scriptFile = scriptPath;
 				script = File.getContent(scriptPath);
 			}
+			#if openfl else if (Assets.exists(scriptPath))
+                script = Assets.getText(scriptPath);
+	  	    #end
 			else
 				script = scriptPath;
 		}
