@@ -23,7 +23,6 @@ package hscriptBase;
 import haxe.PosInfos;
 import hscriptBase.Expr;
 import haxe.Constraints;
-import tea.TeaScript;
 
 private enum Stop {
 	SBreak;
@@ -31,7 +30,7 @@ private enum Stop {
 	SReturn;
 }
 
-@:access(tea.TeaScript)
+@:access(SScript)
 class Interp {
 
 	#if haxe3
@@ -51,7 +50,7 @@ class Interp {
 	var returnValue : Dynamic;
 
 	var parser : Parser;
-	var script : TeaScript;
+	var script : SScript;
 
 	#if hscriptPos
 	var curExpr : Expr;
@@ -109,7 +108,7 @@ class Interp {
 			if (curExpr != null)
 				return cast { fileName : curExpr.origin, lineNumber : curExpr.line };
 		#end
-		return cast { fileName : "TeaScript", lineNumber : 0 };
+		return cast { fileName : "SScript", lineNumber : 0 };
 	}
 
 	var inFunc : Bool = false;

@@ -1,40 +1,26 @@
-package tea;
+package;
 
 import ex.*;
-
 import haxe.DynamicAccess;
 import haxe.Exception;
-
-#if sys
+import SScript.SScriptCall;
 import sys.FileSystem;
 import sys.io.File;
-#end
-
-import tea.TeaScript.TeaCall;
-
-#if openflPos
-import openfl.Assets;
-#end
 
 /**
-	A sub class for TeaScript, supports classes but it doesn't support any features of TeaScript.
+	A sub class for SScript, supports classes but it doesn't support any features of SScript.
 
-	TeaScript will already have a XTea instance so don't use this class.
+	SScript will already have a SScriptX instance so don't use this class.
 **/
 @:access(ex.InterpEx)
-@:access(TeaScript)
-class XTea
+class SScriptX
 {
 	@:noPrivateAccess static var variables:Map<String, Dynamic> = new Map();
 
 	static var NONE(default, null):Array<Exception> = new Array();
 
-	var tea:TeaScript;
-
-	@:noPrivateAccess var script:TeaScript;
-
 	/**
-		An unique interpreter for this instance of `XTea`.
+		An unique interpreter for this instance of `SScriptX`.
 
 		Do not mess with its properities!
 	**/
@@ -74,65 +60,30 @@ class XTea
 	var scriptFile(default, null):String;
 
 	/**
-		Creates a new `XTea` instance.
+		Creates a new `SScriptX` instance.
 		@param scriptFile The script file or the script itself. It is optional, but you'll need to `doString` after to use this instance.
 	**/
-	function new(?scriptFile:String = "", tea:TeaScript)
+	function new(?scriptFile:String = "")
 	{
 		if (scriptFile != null && scriptFile.length > 0)
 		{
-			#if sys
-			#if openflPos
-			if ((try Assets.exists(scriptFile) catch (e) false) || FileSystem.exists(scriptFile))
-			#else
 			if (FileSystem.exists(scriptFile))
-			#end
 			{
 				this.scriptFile = scriptFile;
 				interpEX.origin = scriptFile;
-
-				var contents:String = #if openflPos try Assets.getText(scriptFile) catch (e) #end File.getContent(scriptFile);
-				interpEX.addModule(File.getContent(contents));
+				interpEX.addModule(File.getContent(scriptFile));
 			}
 			else
 			{
 				this.scriptFile = "";
 				interpEX.addModule(scriptFile);
 			}
-			#else
-			#if openflPos
-			if ((try Assets.exists(scriptFile) catch (e) false))
-			{
-				this.scriptFile = scriptFile;
-				var contents:String = try Assets.getText(scriptFile) catch (e) null;
-				if (contents != null)
-				{
-					interpEX.origin = scriptFile;
-					interpEX.addModule(contents);
-				}
-				else
-				{
-					this.scriptFile = "";
-					interpEX.addModule(scriptFile);
-				}
-			}
-			else
-			{
-			#end
-				this.scriptFile = "";
-				interpEX.addModule(scriptFile);
-			#if openflPos
-			}
-			#end
-			#end
 		}
 		else
 			this.scriptFile = "";
 
 		clearClasses();
 		createClasses();
-
-		this.tea = tea;
 	}
 
 	/**
@@ -144,7 +95,7 @@ class XTea
 		@param className Optional class to check.
 		@return Returns the return value, the class name and exceptions (if there are any).
 	**/
-	function callFunction(func:String, ?args:Array<Dynamic>, ?className:String):TeaCall
+	function callFunction(func:String, ?args:Array<Dynamic>, ?className:String):SScriptCall
 	{
 		var cl = className == null ? null : classes[className];
 		if (cl != null)
@@ -192,7 +143,7 @@ class XTea
 			{
 				if (scriptFile != null)
 				{
-					exceptions.push(new Exception('${if (scriptFile.length > 0) scriptFile else "This instance of TeaScript"} does not have any valid classes in it, returning $null.'));
+					exceptions.push(new Exception('${if (scriptFile.length > 0) scriptFile else "This instance of SScript"} does not have any valid classes in it, returning $null.'));
 				}
 			}
 
@@ -214,12 +165,13 @@ class XTea
 		@param obj The object to set. 
 		@return Returns this instance for chaining.
 	**/
-	function set(key:String, value:Dynamic):XTea
+	function set(key:String, value:Dynamic):SScriptX
 	{
 		if (interpEX == null)
 			return null;
 
 		interpEX.variables[key] = value;
+		variables[key] = value;
 		for (i in InterpEx.interps)
 		{
 			for (l => k in variables)
@@ -229,14 +181,9 @@ class XTea
 		return this;
 	}
 
-	function doString(string:String, ?origin:String):XTea
+	function doString(string:String, ?origin:String):SScriptX
 	{
-		if (origin == 'TeaScript')
-			origin = 'XTea';
-		
-		var vars = interpEX.variables;
 		interpEX = new InterpEx(false);
-		interpEX.variables = vars;
 		if (origin != null)
 			interpEX.origin = origin;
 		interpEX.addModule(string);
@@ -275,7 +222,7 @@ class XTea
 	}
 
 	inline function toString():String
-		return "[ex.XTea]";
+		return "[ex.SScriptX]";
 
 	function get_currentSuperClass():Class<Dynamic>
 	{

@@ -1,13 +1,13 @@
 {
-  "name": "TeaScript",
-  "url": "https://github.com/TheWorldMachinima/TeaScript",
+  "name": "SScript",
+  "url": "https://github.com/TheWorldMachinima/SScript",
   "license": "Apache",
-  "tags": ["hscript", "teascript", "haxescript"],
-  "description": "An easy-to-use Haxe Script library for all targets.",
-  "version": "1.0.0",
-  "classPath": "tea/",
-  "releasenote": "First release.",
-  "contributors": ["TheWorldMachinima"],
+  "tags": ["hscript", "sscript", "haxescript"],
+  "description": "An easy-to-use Haxe Script class for all static targets.",
+  "version": "2.0.0",
+  "classPath": "src/",
+  "releasenote": "Class support + a lot of rewritten functions",
+  "contributors": ["TheWorldMachinima", "TahirRollingArch"],
   "dependencies": {
   }
 }

@@ -333,7 +333,7 @@ class Printer {
 	public static function errorToString( e : Expr.Error ) {
 		var message = switch( #if hscriptPos e.e #else e #end ) {
 			case EInvalidChar(c): "Invalid character: '"+(StringTools.isEof(c) ? "EOF" : String.fromCharCode(c))+"' ("+c+")";
-			case EUnexpected(s): "Unexpected \""+s+"\"";
+			case EUnexpected(s): "Unexpected token: \""+s+"\"";
 			case EUnterminatedString: "Unterminated string";
 			case EUnterminatedComment: "Unterminated comment";
 			case EInvalidPreprocessor(str): "Invalid preprocessor (" + str + ")";
