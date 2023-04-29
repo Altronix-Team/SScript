@@ -1,0 +1,13 @@
+{
+  "name": "TeaScript",
+  "url": "https://github.com/TheWorldMachinima/TeaScript",
+  "license": "Apache",
+  "tags": ["hscript", "teascript", "haxescript"],
+  "description": "An easy-to-use Haxe Script library for all targets.",
+  "version": "1.0.0",
+  "classPath": "tea/",
+  "releasenote": "First release.",
+  "contributors": ["TheWorldMachinima"],
+  "dependencies": {
+  }
+}
