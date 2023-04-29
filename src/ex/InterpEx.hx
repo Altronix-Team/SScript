@@ -3,23 +3,21 @@ package ex;
 import hscriptBase.Expr;
 import hscriptBase.*;
 
-import tea.XTea;
-
 @:access(ex.ScriptClass)
 @:access(ex.AbstractScriptClass)
-@:access(tea.XTea)
+@:access(SScriptX)
 class InterpEx extends hscriptBase.Interp
 {
 	var pkg(default, null):String;
 
 	@:noPrivateAccess private static var interps:Array<InterpEx> = [];
+
 	private var _proxy:AbstractScriptClass = null;
-	var origin:String = "XTea";
+	var origin:String = "SScriptX";
 
-	var changedClasses:Map<String, Array<String>> = new Map();
-
-	public function new(proxy:AbstractScriptClass = null, ?push:Bool = true, ?superClassInstances:Map<String, Dynamic>)
+	public function new(proxy:AbstractScriptClass = null, ?push = true)
 	{
+		super.binops;
 		super();
 		_proxy = proxy;
 		variables.set("Type", Type);
@@ -27,9 +25,9 @@ class InterpEx extends hscriptBase.Interp
 		variables.set("Std", Std);
 		if (push)
 			interps.push(this);
-		for (i in XTea.variables.keys())
+		for (i in SScriptX.variables.keys())
 			if (!variables.exists(i))
-				variables.set(i, XTea.variables.get(i));
+				variables.set(i, SScriptX.variables.get(i));
 	}
 
 	override function posInfos() {
@@ -37,7 +35,7 @@ class InterpEx extends hscriptBase.Interp
 			if (curExpr != null)
 				return cast { fileName : curExpr.origin, lineNumber : curExpr.line };
 		#end
-		return cast { fileName : "XTea", lineNumber : 0 };
+		return cast { fileName : "SScriptX", lineNumber : 0 };
 	}
 
 	private static var _scriptClassDescriptors:Map<String, ClassDeclEx> = new Map<String, ClassDeclEx>();
@@ -279,7 +277,7 @@ class InterpEx extends hscriptBase.Interp
 					}
 					else
 						this.pkg = path[0];
-				case DImport(path, _, asIdent):
+				case DImport(path, _):
 					var last = path[path.length - 1];
 					imports.set(last, path);
 				case DClass(c):

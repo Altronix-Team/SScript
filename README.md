@@ -1,64 +1,47 @@
 
-# TeaScript
+# SScript
 
-TeaScript is an easy to use Haxe script parser and interpreter, including class support and more. It aims to support all of the Haxe structures while being fast and easy to use.
+SScript is an easy to use Haxe script parser and interpreter, including class support and more. It aims to support all of the Haxe structures while being fast and easy to use.
 
-<details>
-  <summary>About Classes</summary>
-  (Classes are supported with [hscript-ex](https://github.com/ianharrigan/hscript-ex "hscript-ex") by [ianharrigan](https://github.com/ianharrigan), files have been modified to make it compatible with TeaScript)
-</details>
+(Classes are supported with [hscript-ex](https://github.com/ianharrigan/hscript-ex "hscript-ex") by [ianharrigan](https://github.com/ianharrigan), files have been modified to make it compatible with SScript)
 
 ## Installation
-`haxelib install TeaScript`
+`haxelib install SScript`
 
 Enter this command in command prompt to get the latest release from Haxe library.
+All of the versions except 1.9.9 have been tested and they are stable.
 
 ------------
 
-`haxelib git TeaScript https://github.com/TheWorldMachinima/TeaScript.git`
+`haxelib git SScript https://github.com/TheWorldMachinima/SScript.git`
 
 Enter this command in command prompt to get the latest git release from Github. 
 Git releases have the latest features but they are unstable and can cause problems.
 
-After installing TeaScript, don't forget to add it to your Haxe project.
+After installing SScript, don't forget to add it to your Haxe project.
 ### OpenFL projects
-Add this to `Project.xml` to add TeaScript to your OpenFL project:
+Add this to `Project.xml` to add SScript to your OpenFL project:
 ```xml
-<haxelib name="TeaScript"/>
+<haxelib name="SScript"/>
 <haxedef name="hscriptPos"/>
 ```
-
-##### Enabling OpenFL Support 
-TeaScript has support OpenFL, enabling it will replace the `sys` library with the `openfl` one. That means you can use TeaScript with HTML5 or any other OpenFL target.
-
-To enable OpenFL support, add this line to `Project.xml`:
-```xml
-<haxedef name="openflPos"/>
-```
-
-This feature is supported on version 9.2.1 or higher.
-Also remember that you can't define this flag on vanilla projects.
-
-------------
-
-
 ### Haxe Projects
-Add this to `build.hxml` to add TeaScript to your Haxe build.
+Add this to `build.hxml` to add SScript to your Haxe build.
 ```hxml
--lib TeaScript
+-lib SScript
 -D hscriptPos
 ```
 
 Flag `hscriptPos` is needed for error handling at runtime. It is optional but definitely recommended.
 ## Usage
-To use TeaScript, you will need a file or a script. Using a file is recommended.
+To use SScript, you will need a file or a script. Using a file is recommended.
 Also define 
 
 ### Using without a file
 ```haxe
-var script:tea.TeaScript = {}; // Create a new TeaScript class
+var script:SScript = new SScript(); // Create a new SScript instance
 script.doString("
-	import Math; // Importing Math is unnecessary since TeaScript will set basic classes to script instance including Math but we do it just in case
+	import Math; // Importing Math is unnecessary since SScript will set basic classes to script instance including Math but we do it just in case
 	
 	function returnRandom():Float
 		return Math.random() * 100;
@@ -70,16 +53,16 @@ Usage of `doString` should be minimalized.
 
 ### Using with a file
 ```haxe
-var script:tea.TeaScript = new tea.TeaScript("script.hx"); // Has the same contents with the script above
+var script:SScript = new SScript("script.hx"); // Has the same contents with the script above
 var randomNumber:Float = script.call('returnRandom').returnValue;
 ```
 
-## Using classes with TeaScript
-TeaScript has 2 modes: **Ex** and **Normal**. 
-If TeaScript has been created with a class, it will automatically switch to Ex mode. Ex mode allows only 3 expressions: imports, package and classes. 
+## Using classes with SScript
+SScript has 2 modes: Ex and Normal. 
+If SScript has been created with a class, it will automatically switch to Ex mode. Ex mode allows only 3 expressions: imports, package and classes. 
 
 So a script like this isn't valid in Ex mode:
-```haxe
+```hscript
 package mypackage;
 
 import sys.io.File;
@@ -93,7 +76,7 @@ trace(1); // This is the part that will cause problems in Ex mode
 Classes can be extended aswell, just like vanilla Haxe. (You can also implement things but it will do nothing for now).
 
 Let's create a file named `script.hx`:
-```haxe
+```hscript
 class ParentClass {
 	var A:Int = 1;
 	function overrideThis():Float
@@ -113,15 +96,12 @@ class Child extends ParentClass {
 ```
 Let's create our haxe project:
 ```haxe
-import tea.TeaScript;
-
 class Main
 {
 	static function main()
 	{
-		var script:TeaScript = new TeaScript("script.hx");
-		// trace(scriptX.exMode); // You can check if script succesfully switched to Ex mode.
-		var c = script.call('overrideThis', 'Child'); // You need to specify the Child class, if it isn't specified TeaScript will call the function from ParentClass
+		var script:SScript = new SScript("script.hx");
+		var c = script.call('overrideThis', 'Child'); // You need to specify the Child class, if it isn't specified SScript will call the function from ParentClass
 		trace(c);
 	}
 }
@@ -137,18 +117,16 @@ In this case it succeeds but it may not for some scripts. You can always check `
 Parent classes don't need to be scripted, they can be Haxe classes aswell.
 Let's create an example project:
 ```haxe
-import tea.TeaScript;
-
 class Main {
 	static function main()
 	{
-		var script:TeaScript = new TeaScript();
-		script.set('ParentClass', ParentClass); // Set ParentClass to TeaScript
-		// To set classes, you can use these alternatives too
+		var script:SScript = new SScript();
+		script.set('ParentClass', ParentClass); // Set ParentClass to SScript
+		// To set classes, you can use these alternatives below
 		script.setClass(ParentClass);
 		script.setClassString('ParentClass');
 		script.doString("
-				class Child extends ParentClass
+				class Child extends Parent
 				{
 					override function overrideThis()
 					{
@@ -175,66 +153,20 @@ class ParentClass {
 When it is compiled, it will print out like this:
 ![](https://i.ibb.co/VJ7Bz8s/Ekran-Resmi-2023-04-04-00-01-07.png)
 
+
+
 ------------
 
-## Extending OpenFL and Flixel states
-If you try to extend states in scripts, it'll cause the program to crash.
-Luckily, TeaScript has a fix for that.
-
-Before you create a script, you need to set an instance of the current state to `TeaScript.superClassInstances` to fix it.
-For example in a Flixel state, this can be fixed like this:
-
+## Extending SScript
+You can create a class extending SScript to customize it better.
 ```haxe
-class PlayState extends flixel.FlxState
+class SScriptExtended extends SScript
 {
-	override function create()
+	public function new(scriptFile:String)
 	{
-		super.create();
-
-		TeaScript.superClassesInstances["PlayState"] = this;
-		TeaScript.listScripts('assets/data/'); // Every script with a class extending PlayState will use 'this' instance
+		super(scriptFile);
 	}
-}
-```
-
-------------
-
-## Preprocessing Values
-**This feature is not available on these targets:**
-- JavaScript (Will be supported with OpenFL soon)
-- Flash
-- ActionScript 3
-
-You can preprocess values in Normal and Ex mode.
-This feature is available in vanilla and OpenFL.
-
-Example:
-```haxe
-#if sys
-trace('sys is activated');
-#end
-
-#if (haxe > 4.3)
-trace('haxe is bigger than 4.3');
-#elseif (haxe == "4.3.0")
-trace('haxe is 4.3');
-#elseif (haxe >= "4.2")
-trace('Haxe is between 4.2 and 4.3');
-#else
-trace('Haxe is older than 4.2');
-#end
-```
-
-This feature works with libraries and other flags too.
-If a flag has no value, like `sys`, their value will be `"1"`.
-
-------------
-
-## Extending TeaScript
-You can create a class extending TeaScript to customize it better.
-```haxe
-class TeaScriptEx extends tea.TeaScript
-{
+	
 	override function preset():Void
 	{
 		super.preset();
@@ -249,7 +181,7 @@ class TeaScriptEx extends tea.TeaScript
 ```
 It is recommended to override only `preset`, other functions were not written with overridability in mind.
 
-## Additional variables
+## Addiotional variables
 1. `unset` will remove a variable from script, making it unavailable for later use.
 
 2. `get` will return the variable you've asked for from the script. It will return null if the variable doesn't exist.
@@ -263,6 +195,3 @@ It is recommended to override only `preset`, other functions were not written wi
 6. `currentScriptClass` changes based on `currentClass`, it is not an actual class but it is an abstract containing useful variables like `listFunctions` and more.
 
 7. `currentSuperClass` is the actual parent class of `currentScriptClass`. It's type is `Class<Dynamic>`.
-
-## Contact
-If you have any questions or requests, open an issue here or message me on my Discord (tahir#5885).

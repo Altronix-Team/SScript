@@ -5,8 +5,6 @@ import hscriptBase.Expr.FunctionDecl;
 import hscriptBase.Expr.VarDecl;
 import hscriptBase.Printer;
 
-import tea.TeaScript;
-
 enum Param
 {
 	Unused;
@@ -95,23 +93,7 @@ class ScriptClass
 			{
 				@:privateAccess _interp.error(ECustom("could not resolve super class: " + extendString));
 			}
-			else 
-			{
-				function createSuperClass():Void
-					superClass = Type.createInstance(c, args);
-
-				var instance:Dynamic = TeaScript.superClassInstances[extendString];
-				if (instance != null)
-				{
-					var cl:Class<Dynamic> = Type.getClass(instance);
-					if (cl != null && extendString == Type.getClassName(cl))
-						superClass = instance;
-					else 
-						createSuperClass();
-				}
-				else
-					createSuperClass();
-			}
+			superClass = Type.createInstance(c, args);
 		}
 	}
 
@@ -158,10 +140,7 @@ class ScriptClass
 						throw 'Field $name should be declared with \'override\' since it is inherited from superclass $className';
 					else
 					{
-						var className:String = null;
-						// JavaScript issues
-						if (superClass != null)
-							className = Type.getClassName(superClass);
+						var className:String = Type.getClassName(superClass);
 						if (className == null)
 							className = superClassName;
 						var expr = Tools.expr(fn.expr);

@@ -29,7 +29,7 @@ class Tools {
 		"import", "package", "if", "var", "for", "while", "final", "do", "as", "using", "break", "continue",
 		"public", "private", "static", "overload", "override", "class", "function", "else", "try", "catch",
 		"abstract", "case", "switch", "untyped", "cast", "typedef", "dynamic", "default", "enum", "extern",
-		"extends", "implements", "in", "macro", "new", "null", "return", "throw", "from", "to", "super",
+		"extends", "implements", "in", "macro", "new", "null", "return", "throw", "from", "to", "super"
 	];
 
 	public static function iter( e : Expr, f : Expr -> Void ) {
@@ -142,6 +142,9 @@ class Tools {
 				{
 					var split = name.split('.');
 					name = split[split.length - 1];
+				}
+				switch (name){
+					
 				}
 				name;
 				case TFunction: "Function";
